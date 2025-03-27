@@ -6,7 +6,7 @@ import {
   deleteUserService,
   loginUserService,
 } from "../services/users.js";
- import { verifyTokenExpiry } from "../uilities/tokenService.js";
+import { verifyTokenExpiry } from "../uilities/tokenService.js";
 export const getUsers = async (req, res) => {
   try {
     const users = await getAllUsers();
@@ -33,9 +33,32 @@ export const getUser = async (req, res) => {
   }
 };
 
+export const getProfile = async (req, res) => {
+  let user = req.user;
+  // let token = req.headers['Authorization'];/* second method */
+ console.log('old user',user)
+//  const result = await verifyTokenExpiry(token) /* second method */
+  try {
+    user = await getUserById(user.userId);
+    // user = await getUserById(result.userId);/* second method */
+    console.log("Fetched user:", user);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Error fetching profile:", err);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching the user." });
+  }
+};
+
 export const createUser = async (req, res) => {
   const { FirstName, LastName, Email, Password } = req.body;
-  console.log("Request Body:", req.body); 
+  console.log("Request Body:", req.body);
   try {
     const newUserId = await createUserService(
       FirstName,
@@ -57,12 +80,10 @@ export const updateUser = async (req, res) => {
   const { FirstName, LastName, Email, Password } = req.body;
 
   if (!FirstName || !LastName || !Email || !Password) {
-    return res
-      .status(400)
-      .json({
-        status: "Error",
-        message: "FirstName, LastName, Email, and Password are required",
-      });
+    return res.status(400).json({
+      status: "Error",
+      message: "FirstName, LastName, Email, and Password are required",
+    });
   }
 
   try {
@@ -110,47 +131,55 @@ export const deleteUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { Email, Password } = req.body;
   if (!Email || !Password) {
-    return res.status(400).json({ status: 'Error', message: 'Email and password are required.' });
+    return res
+      .status(400)
+      .json({ status: "Error", message: "Email and password are required." });
   }
 
   try {
     const result = await loginUserService(Email, Password);
 
     if (!result) {
-      return res.status(401).json({ status: 'Error', message: 'Invalid email or password.' });
+      return res
+        .status(401)
+        .json({ status: "Error", message: "Invalid email or password." });
     }
 
     res.status(200).json({
-      status: 'Success',
-      token: result.token, 
+      status: "Success",
+      token: result.token,
       user: {
         ID: result.user.ID,
         Email: result.user.Email,
         FirstName: result.user.FirstName,
-        LastName: result.user.LastName
-      }
+        LastName: result.user.LastName,
+      },
     });
   } catch (err) {
-    res.status(500).json({ status: 'Error', message: err.message });
+    res.status(500).json({ status: "Error", message: err.message });
   }
 };
 
 export const authMiddleware = async (req, res, next) => {
-  const token = req.headers['authorization']; 
+  const token = req.headers["authorization"];
   console.log(token);
   if (!token) {
-    return res.status(403).json({ status: 'Error', message: 'Access denied. No token provided.' });
+    return res
+      .status(403)
+      .json({ status: "Error", message: "Access denied. No token provided." });
   }
   try {
     const result = await verifyTokenExpiry(token);
-    console.log(result)
+    console.log(result);
     if (result.isExpired) {
-      return res.status(401).json({ status: 'Error', message: result.message });
+      return res.status(401).json({ status: "Error", message: result.message });
     }
     req.user = result.decoded;
-    console.log(token)
-    next(); 
+    console.log(token);
+    next();
   } catch (err) {
-    return res.status(401).json({ status: 'Error', message: 'Invalid or expired token.' });
+    return res
+      .status(401)
+      .json({ status: "Error", message: "Invalid or expired token." });
   }
 };
