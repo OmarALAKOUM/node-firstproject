@@ -3,7 +3,7 @@ import users from "./src/routes/users.js";
 import cors from 'cors'
 
 const app = express();
-const port = process.env.port
+const port = process.env.port || 4000;
 
 app.use(cors({origin:'http://localhost:5173'})); // Url frontend
 app.use(express.urlencoded({ extended: true }));
