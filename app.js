@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(users);
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server is running at http://:${port}`);
 });
 
 // app.get('/api/users', async (req, res) => {
