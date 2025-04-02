@@ -17,6 +17,7 @@ app.listen(port, () => {
 app.get("/ping", (req, res) => {
   res.status(200).send("Server is running!");
 });
+
 // app.get('/api/users', async (req, res) => {
 //   try {
 //     const [users] = await db.query('SELECT * FROM users');
